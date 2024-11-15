@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { UserContext } from './UserContext';
 
 function UsersList() {
     const [users, setUsers] = useState([]);
+    const { user: currentUser } = useContext(UserContext);
 
     useEffect(() => {
         fetch('https://server.samgak.store/api/users')
             .then((response) => response.json())
             .then((data) => {
-                setUsers(data);
+                const filteredUsers = data.filter((user) => user.id !== currentUser.userId);
+                setUsers(filteredUsers);
             })
             .catch((error) => {
                 console.error('Error fetching users:', error);
@@ -21,7 +24,7 @@ function UsersList() {
             <ul>
                 {users.map((user) => (
                     <li key={user.id}>
-                        <Link to={`/chats/${user.username}`}>{user.username}</Link>
+                        <Link to={`/chats/${user.id}`}>{user.username}</Link>
                     </li>
                 ))}
             </ul>

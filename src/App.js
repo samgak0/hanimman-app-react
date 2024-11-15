@@ -1,15 +1,18 @@
 import UsersList from "./UsersList";
-import ChatsPage from "./ChatsPage";
+import Chats from "./Chats";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { UserProvider } from "./UserContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<UsersList />} />
-        <Route path="/chats/:username" element={<ChatsPage />} />
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<UsersList />} />
+          <Route path="/chats/:userId" element={<Chats />} />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 

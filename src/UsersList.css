@@ -1,0 +1,96 @@
+/* UsersList.css */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    color: #2b2b2b;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.users-list-container {
+    max-width: 900px;
+    width: 90%;
+    margin: 0 auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    color: #2b2b2b;
+}
+
+.current-user-info {
+    text-align: center;
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+}
+
+.users-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.user-card {
+    width: calc(33.333% - 20px);
+    min-width: 200px;
+    text-align: center;
+    padding: 20px;
+    border-radius: 15px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    background: #f9f9f9;
+    border: 1px solid #dfe3e8;
+    color: #2b2b2b;
+}
+
+.user-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.chat-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #007bff;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: background-color 0.3s, transform 0.3s;
+    font-weight: 500;
+}
+
+.chat-link:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* 추가된 로그인 변경 버튼 스타일 */
+.change-user-button {
+    margin-top: 10px;
+    padding: 8px 15px;
+    background-color: #ff6f61;
+    color: #ffffff;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    font-weight: 500;
+}
+
+.change-user-button:hover {
+    background-color: #e0554b;
+    transform: scale(1.05);
+}

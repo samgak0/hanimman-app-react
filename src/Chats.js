@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import API_CONFIG from './apiConfig';
+import './Chats.css';
 
 function Chats() {
     const { user: sender } = useContext(UserContext);
@@ -9,6 +10,51 @@ function Chats() {
     const [messages, setMessages] = useState([]);
     const [receiverName, setReceiverName] = useState(null);
     const inputRef = useRef(null);
+    const messagesRef = useRef(null);
+
+    const fetchMessages = useCallback(async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.MESSAGES}?senderId=${sender.userId}&receiverId=${receiverId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setMessages(data);
+                setTimeout(() => { scrollToBottom(); }, 500);
+                setTimeout(() => { scrollToBottom(); }, 1000);
+            } else {
+                console.error('메시지 정보를 가져오는 데 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('API 호출 중 오류 발생:', error);
+        }
+    }, [receiverId, sender.userId]);
+
+    const markMessagesAsRead = useCallback(async () => {
+        const unreadMessages = messages.filter(message => !message.read && message.sender.id !== sender.userId);
+        const unreadMessageIds = unreadMessages.map(message => message.id);
+
+        if (unreadMessageIds.length === 0) return;
+
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.MESSAGES}/mark-read`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ messageIds: unreadMessageIds }),
+            });
+
+            if (response.ok) {
+                setMessages(prevMessages => prevMessages.map(m =>
+                    unreadMessageIds.includes(m.id) ? { ...m, read: true } : m
+                ));
+            } else {
+                console.error('메시지들을 읽음 처리하는 데 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('읽음 처리 중 오류 발생:', error);
+        }
+    }, [messages, sender.userId]);
+
 
     useEffect(() => {
         const fetchReceiver = async () => {
@@ -16,8 +62,7 @@ function Chats() {
                 const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.USERS}${receiverId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setReceiverName(data.username); // 상대방 이름 설정
-
+                    setReceiverName(data.username);
                     if (sender.userId && receiverId) {
                         fetchMessages();
                     }
@@ -29,35 +74,62 @@ function Chats() {
             }
         };
 
-        const fetchMessages = async () => {
-            try {
-                const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.MESSAGES}?senderId=${sender.userId}&receiverId=${receiverId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setMessages(data); // 메시지 리스트 상태 업데이트
-                } else {
-                    console.error('메시지 정보를 가져오는 데 실패했습니다.');
-                }
-            } catch (error) {
-                console.error('API 호출 중 오류 발생:', error);
+        fetchReceiver();
+
+        const intervalId = setInterval(() => {
+            fetchMessages();
+        }, 5000);
+
+        return () => clearInterval(intervalId);
+    }, [receiverId, sender.userId, fetchMessages]);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                markMessagesAsRead();
             }
         };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        fetchReceiver();
-    }, [receiverId, sender.userId]);
+        if (document.visibilityState === 'visible') {
+            markMessagesAsRead();
+        }
 
-    const sendMessage = () => {
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [messages, markMessagesAsRead]);
+
+    const sendMessage = async () => {
         const messageContent = inputRef.current.value.trim();
         if (messageContent) {
             const newMessage = {
-                id: Date.now(),
-                sender: {
-                    id: sender.userId,
-                    username: sender.username
-                },
                 content: messageContent,
+                sender: sender.userId,
+                receiver: receiverId,
+                read: false,
             };
-            setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.MESSAGES}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newMessage),
+                });
+
+                if (response.ok) {
+                    const savedMessage = await response.json();
+                    setMessages((prevMessages) => [...prevMessages, savedMessage]);
+                    scrollToBottom();
+                } else {
+                    console.error('메시지를 보내는 데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('메시지 전송 중 오류 발생:', error);
+            }
+
             inputRef.current.value = '';
             inputRef.current.focus();
         }
@@ -69,48 +141,47 @@ function Chats() {
         }
     };
 
+    const scrollToBottom = () => {
+        if (messagesRef.current) {
+            messagesRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    useEffect(() => {
+        if (messages.length > 0) {
+            scrollToBottom();
+            markMessagesAsRead();
+        }
+    }, [messages, markMessagesAsRead]);
+
     return (
-        <div style={{ padding: '20px', border: '1px solid #ccc' }}>
-            <h2>1:1 채팅 (대화 상대: {receiverName})</h2>
-            <div
-                style={{
-                    height: '300px',
-                    overflowY: 'scroll',
-                    border: '1px solid #ddd',
-                    padding: '10px',
-                    marginBottom: '10px',
-                }}
-            >
+        <div className="chat-container">
+            <div className="chat-header">
+                <h2>1:1 채팅 (대화 상대: {receiverName})</h2>
+            </div>
+            <div className="chat-messages">
                 {messages.map((message) => (
                     <div
                         key={message.id}
-                        style={{
-                            textAlign: message.sender.id === sender.userId ? 'left' : 'right', // 내가 보낸 메시지는 왼쪽, 상대방의 메시지는 오른쪽
-                            marginBottom: '10px',
-                        }}
+                        className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-sent' : 'chat-message-received'}`}
                     >
-                        <div
-                            style={{
-                                display: 'inline-block',
-                                padding: '10px',
-                                borderRadius: '10px',
-                                backgroundColor: message.sender.id === sender.userId ? '#f1f0f0' : '#DCF8C6', // 내가 보낸 메시지는 회색, 상대방의 메시지는 연한 녹색
-                                color: '#333',
-                                maxWidth: '60%',
-                            }}
-                        >
+                        <div className="chat-bubble">
                             <strong>{message.sender.id === sender.userId ? '나' : message.sender.username}:</strong> {message.content}
                         </div>
                     </div>
                 ))}
+                <div ref={messagesRef} />
             </div>
-            <input
-                type="text"
-                ref={inputRef}
-                onKeyDown={handleKeyDown}
-                style={{ width: 'calc(100% - 70px)', marginRight: '10px' }}
-            />
-            <button onClick={sendMessage}>전송</button>
+            <div className="chat-input-container">
+                <input
+                    type="text"
+                    ref={inputRef}
+                    onKeyDown={handleKeyDown}
+                    placeholder="메시지를 입력하세요..."
+                    className="chat-input"
+                />
+                <button onClick={sendMessage} className="chat-send-button">전송</button>
+            </div>
         </div>
     );
 }

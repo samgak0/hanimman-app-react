@@ -11,7 +11,6 @@ function UsersList() {
         fetch('https://server.samgak.store/api/users')
             .then((response) => response.json())
             .then((data) => {
-                // 현재 사용자는 목록에서 제외한 후 나머지 사용자만 상태에 저장
                 const filteredUsers = data.filter((user) => user.id !== currentUser.userId);
                 setUsers(filteredUsers);
             })
@@ -20,7 +19,6 @@ function UsersList() {
             });
     }, [currentUser.userId]);
 
-    // 로그인된 사용자 변경 함수
     const changeCurrentUser = (user) => {
         setUser({
             userId: user.id,
@@ -50,7 +48,7 @@ function UsersList() {
                             className="change-user-button"
                             onClick={() => changeCurrentUser(user)}
                         >
-                            🔄 로그인으로 설정
+                            🔄 사용자 전환
                         </button>
                     </div>
                 ))}

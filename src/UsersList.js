@@ -1,14 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserContext } from './UserContext';
-import './UsersList.css'; // 추가된 CSS 파일 import
+import API_CONFIG from './ApiConfig';
+import './UsersList.css';
 
 function UsersList() {
     const [users, setUsers] = useState([]);
-    const { user: currentUser, setUser } = useContext(UserContext); // setUser 사용
+    const { user: currentUser, setUser } = useContext(UserContext);
 
     useEffect(() => {
-        fetch('https://server.samgak.store/api/users')
+        fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.USERS}`)
             .then((response) => response.json())
             .then((data) => {
                 const filteredUsers = data.filter((user) => user.id !== currentUser.userId);

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState, useCallback } from 'rea
 import { useParams } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import API_CONFIG from './ApiConfig';
+import './Common.css';
 import './Chats.css';
 
 function Chats() {
@@ -15,7 +16,7 @@ function Chats() {
 
     const fetchReceiver = useCallback(async () => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.USERS}${receiverId}`);
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.USERS}/${receiverId}`);
             if (response.ok) {
                 const data = await response.json();
                 setReceiverName(data.username);
@@ -136,7 +137,10 @@ function Chats() {
     }, [messages, markMessagesAsRead]);
 
     return (
-        <div className="chat-messages">
+        <div className="chat-container">
+            <div className="chat-header">
+                <h2>{receiverName} 님과 대화</h2>
+            </div>
             {messages.map((message) => (
                 <div
                     key={message.id}

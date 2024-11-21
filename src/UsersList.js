@@ -1,12 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import API_CONFIG from './ApiConfig';
+import './Common.css';
 import './UsersList.css';
 
 function UsersList() {
     const [users, setUsers] = useState([]);
     const { user: currentUser, setUser } = useContext(UserContext);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.USERS}`)
@@ -27,6 +29,9 @@ function UsersList() {
         });
     };
 
+    const goToPage = (userId) => {
+        navigate(`/chats/${userId}`);
+    };
     return (
         <div className="users-list-container">
             <div className="current-user-info card">
@@ -42,19 +47,22 @@ function UsersList() {
                 {users.map((user) => (
                     <div key={user.id} className="user-card card">
                         <h4>{user.username}</h4>
-                        <Link to={`/chats/${user.id}`} className="chat-link">
-                            💌 대화 시작
-                        </Link>
-                        <button
-                            className="change-user-button"
-                            onClick={() => changeCurrentUser(user)}
-                        >
-                            🔄 사용자 전환
-                        </button>
+                        <div className="user-buttons">
+
+                            <button className='button-chat' onClick={() => goToPage(user.id)}>
+                                대화 시작
+                            </button>
+                            <button
+                                className="button-change"
+                                onClick={() => changeCurrentUser(user)}
+                            >
+                                사용자 전환
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
-        </div>
+        </div >
     );
 }
 

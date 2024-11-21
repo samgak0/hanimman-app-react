@@ -1,6 +1,6 @@
 const API_CONFIG = {
-    BASE_URL: "https://server.samgak.store/api",
-    USERS: "/users/",
+    BASE_URL: "http://localhost:8080/api",
+    USERS: "/users",
     MESSAGES: "/messages"
 };
 

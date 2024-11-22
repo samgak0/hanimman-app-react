@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState, useCallback } from 'rea
 import { useParams } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import API_CONFIG from './ApiConfig';
+import { useNavigate } from 'react-router-dom';
 import './Common.css';
 import './Chats.css';
 
@@ -11,8 +12,8 @@ function Chats() {
     const [messages, setMessages] = useState([]);
     const [receiverName, setReceiverName] = useState(null);
     const inputRef = useRef(null);
-    const messagesRef = useRef(null);
-
+    const chatInputContainer = useRef(null);
+    const navigate = useNavigate();
 
     const fetchReceiver = useCallback(async () => {
         try {
@@ -26,7 +27,7 @@ function Chats() {
         } catch (error) {
             console.error('API 호출 중 오류 발생:', error);
         }
-    }, [receiverId, sender.userId]);
+    }, [receiverId]);
 
     const fetchMessages = useCallback(async () => {
         try {
@@ -115,8 +116,8 @@ function Chats() {
     };
 
     const scrollToBottom = () => {
-        if (messagesRef.current) {
-            messagesRef.current.scrollIntoView({ behavior: 'smooth' });
+        if (chatInputContainer.current) {
+            chatInputContainer.current.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
@@ -139,25 +140,27 @@ function Chats() {
     return (
         <div className="chat-container">
             <div className="chat-header">
-                <h2>{receiverName} 님과 대화</h2>
+                <button className="back-button" onClick={() => navigate(-1)}>&lt;</button>
+                <h2 className="chat-header-title">{receiverName} 님과 대화</h2>
             </div>
-            {messages.map((message) => (
-                <div
-                    key={message.id}
-                    className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-sent' : 'chat-message-received'}`}
-                >
-                    <div className="chat-bubble">
-                        <strong>{message.sender.id === sender.userId ? '나' : message.sender.username}:</strong> {message.content}
+            <div className="chat-message-container">
+                {messages.map((message) => (
+                    <div
+                        key={message.id}
+                        className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-sent' : 'chat-message-received'}`}
+                    >
+                        <div className="chat-bubble">
+                            <strong>{message.sender.id === sender.userId ? '나' : message.sender.username}:</strong> {message.content}
+                        </div>
+                        {message.sender.id === sender.userId && (
+                            <span className="read-status">
+                                {message.isRead ? '' : '안읽음'}
+                            </span>
+                        )}
                     </div>
-                    {message.sender.id === sender.userId && (
-                        <span className="read-status">
-                            {message.isRead ? '' : '안읽음'}
-                        </span>
-                    )}
-                </div>
-            ))}
-            <div ref={messagesRef} />
-            <div className="chat-input-container">
+                ))}
+            </div>
+            <div className="chat-input-container" ref={chatInputContainer}>
                 <input
                     type="text"
                     ref={inputRef}

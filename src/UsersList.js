@@ -34,21 +34,22 @@ function UsersList() {
     };
     return (
         <div className="users-list-container">
+            <h1 className="users-list-title">한입만 채팅</h1>
+
             <div className="current-user-info card">
-                <h3>👤 현재 로그인된 사용자</h3>
+                <h2 className="current-user-info-title">👤 현재 로그인된 사용자</h2>
                 <p>
                     <strong>Username:</strong> {currentUser.username} <br />
                     <strong>User ID:</strong> {currentUser.userId}
                 </p>
             </div>
 
-            <h3>💬 대화 가능한 사용자 목록</h3>
             <div className="users-grid">
+                <h2 className="users-grid-title">💬 대화 가능한 사용자 목록</h2>
                 {users.map((user) => (
                     <div key={user.id} className="user-card card">
                         <h4>{user.username}</h4>
                         <div className="user-buttons">
-
                             <button className='button-chat' onClick={() => goToPage(user.id)}>
                                 대화 시작
                             </button>

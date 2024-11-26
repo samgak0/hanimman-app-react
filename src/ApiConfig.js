@@ -1,5 +1,5 @@
 const API_CONFIG = {
-    BASE_URL: "http://192.168.100.219:8080/api",
+    BASE_URL: "http://192.168.101.34:8080/api",
     USERS: "/users",
     MESSAGES: "/messages"
 };

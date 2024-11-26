@@ -46,7 +46,7 @@
     flex-direction: column;
     gap: 15px;
     padding: 10px;
-    margin-bottom: 65px
+    margin-bottom: 65px;
 }
 
 .chat-container .chat-message-container .chat-message {

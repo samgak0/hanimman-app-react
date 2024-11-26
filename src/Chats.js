@@ -11,10 +11,11 @@ function Chats() {
     const { userId: receiverId } = useParams();
     const [messages, setMessages] = useState([]);
     const [receiverName, setReceiverName] = useState(null);
+    const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
     const inputRef = useRef(null);
     const chatInputContainer = useRef(null);
+    const chatContainerRef = useRef(null);
     const navigate = useNavigate();
-
     const fetchReceiver = useCallback(async () => {
         try {
             const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.USERS}/${receiverId}`);
@@ -43,7 +44,7 @@ function Chats() {
         } catch (error) {
             console.error('API 호출 중 오류 발생:', error);
         }
-    }, [receiverId, sender.userId]);;
+    }, [receiverId, sender.userId]);
 
     const markMessagesAsRead = useCallback(async () => {
         const unreadMessages = messages.filter(message => !message.isRead && message.sender.id !== sender.userId);
@@ -116,10 +117,44 @@ function Chats() {
     };
 
     const scrollToBottom = () => {
-        if (chatInputContainer.current) {
-            chatInputContainer.current.scrollIntoView({ behavior: 'smooth' });
-        }
+        console.log("scrollToBottom");
+        window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth',
+        });
     };
+
+    const checkScrollPosition = useCallback(() => {
+        const scrollTop = window.scrollY;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        console.log(`scrollHeight = ${scrollHeight}, scrollTop = ${scrollTop}, clientHeight = ${clientHeight}`);
+        console.log(`(scrollHeight - scrollTop - clientHeight) = ${scrollHeight - scrollTop - clientHeight}`);
+
+        const isBottom = ((scrollHeight - scrollTop - clientHeight) <= 44);
+        setIsScrolledToBottom(isBottom);
+    }, []);
+
+    useEffect(() => {
+        const handleViewportChange = () => {
+            if (window.visualViewport) {
+                const viewport = window.visualViewport;
+                const onResize = () => {
+                    if (chatContainerRef.current) {
+                        chatContainerRef.current.style.height = `${viewport.height}px`;
+                    }
+                    scrollToBottom();
+                };
+
+                viewport.addEventListener('resize', onResize);
+                return () => {
+                    viewport.removeEventListener('resize', onResize);
+                };
+            }
+        };
+
+        handleViewportChange();
+    }, []);
 
     useEffect(() => {
         fetchReceiver();
@@ -137,8 +172,20 @@ function Chats() {
         }
     }, [messages, markMessagesAsRead]);
 
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    useEffect(() => {
+        window.addEventListener('scroll', checkScrollPosition);
+
+        return () => {
+            window.removeEventListener('scroll', checkScrollPosition);
+        };
+    }, [checkScrollPosition]);
+
     return (
-        <div className="chat-container">
+        <div className="chat-container" ref={chatContainerRef}>
             <div className="chat-header">
                 <button className="back-button" onClick={() => navigate(-1)}>&lt;</button>
                 <h2 className="chat-header-title">{receiverName} 님과 대화</h2>
@@ -160,6 +207,12 @@ function Chats() {
                     </div>
                 ))}
             </div>
+
+            <button
+                className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''}`} onClick={scrollToBottom} >
+                <img src="/button.svg" alt="아이콘" class="icon" />
+            </button>
+
             <div className="chat-input-container" ref={chatInputContainer}>
                 <input
                     type="text"
@@ -169,6 +222,9 @@ function Chats() {
                     className="chat-input"
                 />
                 <button onClick={sendMessage} className="chat-send-button">전송</button>
+
+
+
             </div>
         </div>
     );

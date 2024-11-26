@@ -46,6 +46,7 @@
     flex-direction: column;
     gap: 15px;
     padding: 10px;
+    margin-bottom: 65px
 }
 
 .chat-container .chat-message-container .chat-message {
@@ -96,6 +97,10 @@
     margin-top: 10px;
     align-items: center;
     gap: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+    background-color: #fff;
 }
 
 .chat-container .chat-input-container .chat-input {
@@ -116,6 +121,7 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     font-size: 0.9em;
+    margin-right: 20px;
 }
 
 .chat-container .chat-input-container .chat-send-button:hover {

@@ -117,7 +117,6 @@ function Chats() {
     };
 
     const scrollToBottom = () => {
-        console.log("scrollToBottom");
         window.scrollTo({
             top: document.documentElement.scrollHeight,
             behavior: 'smooth',
@@ -126,11 +125,9 @@ function Chats() {
 
     const checkScrollPosition = useCallback(() => {
         const scrollTop = window.scrollY;
+
         const scrollHeight = document.documentElement.scrollHeight;
         const clientHeight = document.documentElement.clientHeight;
-        console.log(`scrollHeight = ${scrollHeight}, scrollTop = ${scrollTop}, clientHeight = ${clientHeight}`);
-        console.log(`(scrollHeight - scrollTop - clientHeight) = ${scrollHeight - scrollTop - clientHeight}`);
-
         const isBottom = ((scrollHeight - scrollTop - clientHeight) <= 44);
         setIsScrolledToBottom(isBottom);
     }, []);
@@ -210,7 +207,7 @@ function Chats() {
 
             <button
                 className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''}`} onClick={scrollToBottom} >
-                <img src="/button.svg" alt="아이콘" class="icon" />
+                <img src="/button.svg" alt="아이콘" className="icon" />
             </button>
 
             <div className="chat-input-container" ref={chatInputContainer}>

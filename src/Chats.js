@@ -44,7 +44,7 @@ function Chats() {
         } catch (error) {
             console.error('API 호출 중 오류 발생:', error);
         }
-    }, [receiverId, sender.userId]);
+    }, [receiverId, sender]);
 
     const markMessagesAsRead = useCallback(async () => {
         const unreadMessages = messages.filter(message => !message.isRead && message.sender.id !== sender.userId);
@@ -81,7 +81,7 @@ function Chats() {
             const newMessage = {
                 content: messageContent,
                 sender: sender.userId,
-                receiver: receiverId,
+                receiver: parseInt(receiverId),
                 read: false,
             };
 
@@ -96,7 +96,8 @@ function Chats() {
 
                 if (response.ok) {
                     const savedMessage = await response.json();
-                    setMessages((prevMessages) => [...prevMessages, savedMessage]);
+
+                    setMessages((prevMessages) => [...prevMessages, savedMessage["message"]]);
                     scrollToBottom();
                 } else {
                     console.error('메시지를 보내는 데 실패했습니다.');
@@ -116,10 +117,16 @@ function Chats() {
         }
     };
 
-    const scrollToBottom = () => {
+    const scrollToBottomSmooth = () => {
         window.scrollTo({
             top: document.documentElement.scrollHeight,
             behavior: 'smooth',
+        });
+    };
+
+    const scrollToBottom = () => {
+        window.scrollTo({
+            top: document.documentElement.scrollHeight
         });
     };
 
@@ -131,6 +138,27 @@ function Chats() {
         const isBottom = ((scrollHeight - scrollTop - clientHeight) <= 44);
         setIsScrolledToBottom(isBottom);
     }, []);
+
+    window.NativeInterface = {
+        receiveMessage: (content, username, createdAt) => {
+            messages.forEach((e) => {
+                console.log(e);
+            });
+            const newMessage = {
+                "content": content,
+                "sender": { "id": parseInt(receiverId), "username": receiverName },
+                "receiver": { "id": sender.userId, "username": username },
+                "createdAt": createdAt,
+                "read": false,
+            };
+
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+            scrollToBottom();
+        },
+        getReceiveId: () => {
+            return parseInt(receiverId);
+        }
+    };
 
     useEffect(() => {
         const handleViewportChange = () => {
@@ -149,9 +177,14 @@ function Chats() {
                 };
             }
         };
-
         handleViewportChange();
     }, []);
+
+    useEffect(() => {
+        if (window.Android !== undefined) {
+            window.Android.setReceiverId(receiverId);
+        }
+    }, [receiverId]);
 
     useEffect(() => {
         fetchReceiver();
@@ -206,7 +239,7 @@ function Chats() {
             </div>
 
             <button
-                className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''}`} onClick={scrollToBottom} >
+                className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''}`} onClick={scrollToBottomSmooth} >
                 <img src="/button.svg" alt="아이콘" className="icon" />
             </button>
 

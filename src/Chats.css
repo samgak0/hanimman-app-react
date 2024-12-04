@@ -114,10 +114,9 @@
 }
 
 .chat-container .chat-message-container .chat-message .read-status {
-    min-width: 45px;
+    margin-right: 5px;
     font-size: 0.8em;
-    color: #888;
-    margin-left: 5px;
+    color: #000;
     align-self: center;
 }
 

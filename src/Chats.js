@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import API_CONFIG from './ApiConfig';
@@ -8,7 +8,8 @@ import './Chats.css';
 
 function Chats() {
     const { user: sender } = useContext(UserContext);
-    const { userId: receiverId } = useParams();
+    const { userId } = useParams();
+    const receiverId = Number(userId);
     const [messages, setMessages] = useState([]);
     const [receiverName, setReceiverName] = useState(null);
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
@@ -47,7 +48,7 @@ function Chats() {
     }, [receiverId, sender]);
 
     const markMessagesAsRead = useCallback(async () => {
-        const unreadMessages = messages.filter(message => !message.isRead && message.sender.id !== sender.userId);
+        const unreadMessages = messages.filter(message => !message.isRead && message.sender.id === receiverId);
         const unreadMessageIds = unreadMessages.map(message => message.id);
 
         if (unreadMessageIds.length === 0) return;
@@ -81,7 +82,7 @@ function Chats() {
             const newMessage = {
                 content: messageContent,
                 sender: sender.userId,
-                receiver: parseInt(receiverId),
+                receiver: receiverId,
                 read: false,
             };
 
@@ -146,7 +147,7 @@ function Chats() {
             });
             const newMessage = {
                 "content": content,
-                "sender": { "id": parseInt(receiverId), "username": receiverName },
+                "sender": { "id": receiverId, "username": receiverName },
                 "receiver": { "id": sender.userId, "username": username },
                 "createdAt": createdAt,
                 "read": false,
@@ -156,7 +157,7 @@ function Chats() {
             scrollToBottom();
         },
         getReceiveId: () => {
-            return parseInt(receiverId);
+            return receiverId;
         }
     };
 
@@ -214,6 +215,13 @@ function Chats() {
         };
     }, [checkScrollPosition]);
 
+    const lastSentMessageIndex = useMemo(() => {
+        return messages
+            .map((msg, idx) => (msg.sender.id === sender.userId ? idx : -1))
+            .filter(idx => idx !== -1)
+            .pop();
+    }, [messages, sender.userId]);
+
     return (
         <div className="chat-container" ref={chatContainerRef}>
             <div className="chat-header">
@@ -221,19 +229,19 @@ function Chats() {
                 <h2 className="chat-header-title">{receiverName} 님과 대화</h2>
             </div>
             <div className="chat-message-container">
-                {messages.map((message) => (
+                {messages.map((message, index) => (
                     <div
                         key={message.id}
-                        className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-sent' : 'chat-message-received'}`}
+                        className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-received' : 'chat-message-sent'}`}
                     >
+                        {index === messages.length - 1 && message.sender.id === sender.userId && (
+                            <span className="read-status">
+                                {message.isRead ? '읽음' : '전송됨'}
+                            </span>
+                        )}
                         <div className="chat-bubble">
                             <strong>{message.sender.id === sender.userId ? '나' : message.sender.username}:</strong> {message.content}
                         </div>
-                        {message.sender.id === sender.userId && (
-                            <span className="read-status">
-                                {message.isRead ? '' : '안읽음'}
-                            </span>
-                        )}
                     </div>
                 ))}
             </div>

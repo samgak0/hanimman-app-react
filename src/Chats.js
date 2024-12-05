@@ -5,6 +5,13 @@ import API_CONFIG from './ApiConfig';
 import { useNavigate } from 'react-router-dom';
 import './Common.css';
 import './Chats.css';
+import dayjs from "dayjs";
+
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/ko";
+
+dayjs.extend(relativeTime);
+dayjs.locale("ko");
 
 function Chats() {
     const { user: sender } = useContext(UserContext);
@@ -74,7 +81,7 @@ function Chats() {
         } catch (error) {
             console.error('읽음 처리 중 오류 발생:', error);
         }
-    }, [messages, sender.userId]);
+    }, [messages, receiverId]);
 
     const sendMessage = async () => {
         const messageContent = inputRef.current.value.trim();
@@ -152,12 +159,14 @@ function Chats() {
                 "createdAt": createdAt,
                 "read": false,
             };
-
             setMessages((prevMessages) => [...prevMessages, newMessage]);
             scrollToBottom();
         },
         getReceiveId: () => {
             return receiverId;
+        },
+        setReadMessages: (ids) => {
+            console.log(ids);
         }
     };
 
@@ -215,6 +224,17 @@ function Chats() {
         };
     }, [checkScrollPosition]);
 
+    const groupedMessages = useMemo(() => {
+        return messages.reduce((groups, message) => {
+            const date = dayjs(message.createdAt).format('YYYY-MM-DD');
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(message);
+            return groups;
+        }, {});
+    }, [messages]);
+
     const lastSentMessageIndex = useMemo(() => {
         return messages
             .map((msg, idx) => (msg.sender.id === sender.userId ? idx : -1))
@@ -229,22 +249,44 @@ function Chats() {
                 <h2 className="chat-header-title">{receiverName} 님과 대화</h2>
             </div>
             <div className="chat-message-container">
-                {messages.map((message, index) => (
-                    <div
-                        key={message.id}
-                        className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-received' : 'chat-message-sent'}`}
-                    >
-                        {index === messages.length - 1 && message.sender.id === sender.userId && (
-                            <span className="read-status">
-                                {message.isRead ? '읽음' : '전송됨'}
-                            </span>
-                        )}
-                        <div className="chat-bubble">
-                            <strong>{message.sender.id === sender.userId ? '나' : message.sender.username}:</strong> {message.content}
+                {Object.entries(groupedMessages).map(([date, messages]) => (
+                    <div key={date} className="chat-date-group">
+                        <div className="chat-date">
+                            {dayjs(date).format('YYYY년 MM월 DD일')}
                         </div>
+                        {messages.map((message, index) => (
+                            <div
+                                key={message.id}
+                                className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-received' : 'chat-message-sent'}`}
+                            >
+                                {message.sender.id === sender.userId && (
+                                    <div className="status">
+                                        <div className="receive-time right">
+                                            {dayjs(message.createdAt).format('A hh:mm')}
+                                        </div>
+                                        {index === messages.length - 1 && (
+                                            <div className="read-status">
+                                                {message.isRead ? '읽음' : '전송됨'}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                <div className="chat-bubble">
+                                    {message.content}
+                                </div>
+                                {message.sender.id !== sender.userId && (
+                                    <div className="status">
+                                        <div className="receive-time right">
+                                            {dayjs(message.createdAt).format('A hh:mm')}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 ))}
             </div>
+
 
             <button
                 className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''}`} onClick={scrollToBottomSmooth} >

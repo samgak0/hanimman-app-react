@@ -48,7 +48,7 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
-    padding: 75px 10px;
+    padding: 75px 0;
     background-color: #f7f7f7;
 }
 
@@ -60,23 +60,23 @@
 
 .chat-container .chat-message-container .chat-message.chat-message-sent {
     align-self: flex-start;
-    margin-left: 10px;
+    margin-left: 13px;
 }
 
 .chat-container .chat-message-container .chat-message.chat-message-received {
     align-self: flex-end;
-    margin-right: 10px;
+    margin-right: 13px;
 }
 
 .chat-container .chat-message-container .chat-message .chat-bubble {
     padding: 10px;
     border-radius: 10px;
-    background: #e4e6eb;
     color: #333;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    word-wrap: break-all;
-    overflow-wrap: break-all;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     word-break: break-all;
+    font-weight: 400;
 }
 
 .chat-container .scroll-to-bottom-button {
@@ -112,37 +112,59 @@
     background-color: rgba(124, 124, 124, 0.7);
 }
 
-.chat-container .chat-message-container .chat-message .chat-bubble strong {
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .chat-bubble strong {
     font-weight: 600;
 }
 
-
-.chat-container .chat-message-container .chat-message .status {
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .status {
     display: flex;
     align-items: end;
     align-self: flex-end;
     flex-direction: column;
+    font-weight: 300;
+    min-width: 55px;
 }
 
-.chat-container .chat-message-container .chat-message .read-status {
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .status.left {
     margin-right: 5px;
+}
+
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .status.right {
+    margin-left: 5px;
+}
+
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .read-status {
     font-size: 0.8em;
     color: #000;
     align-self: flex-end;
 }
 
-.chat-container .chat-message-container .chat-message .receive-time {
-    margin-right: 5px;
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .receive-time {
     font-size: 0.8em;
     color: #000;
     align-self: flex-end;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: keep-all;
 }
 
-/*.chat-container .chat-message-container .chat-message .receive-time.left {}*/
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message.chat-message-sent:not(:last-child) .chat-bubble {
+    margin-right: 60px;
+}
 
-.chat-container .chat-message-container .chat-message .receive-time.right {
-    margin-left: 10px;
-    width: 60px;
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message.chat-message-received:not(:last-child) .chat-bubble {
+    margin-left: 60px;
+}
+
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .receive-time.left {
+    margin: 0;
+    margin-left: 5px;
+}
+
+.chat-container .chat-message-container .chat-date-group .time-group .chat-message .receive-time.right {
+    margin: 0;
+    margin-right: 5px;
 }
 
 .chat-message-container {
@@ -155,29 +177,36 @@
     flex-direction: column;
 }
 
-.chat-date-group {
+.chat-container .chat-message-container .chat-date-group {
     display: flex;
     flex-direction: column;
 }
 
-.chat-message {
+.chat-container .chat-message-container .chat-date-group .time-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-container .chat-message-container .chat-message {
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
-.chat-date {
+.chat-container .chat-message-container .chat-date {
     text-align: center;
     margin: 10px 0;
     font-size: 14px;
     color: #888;
-    font-weight: bold;
     border-bottom: 1px solid #ddd;
     padding-bottom: 5px;
 }
 
 .chat-container .chat-message-container .chat-message-received .chat-bubble {
     background: #FFF1DE;
-    color: #000;
+}
+
+.chat-container .chat-message-container .chat-message-sent .chat-bubble {
+    background: #e4e6eb;
 }
 
 .chat-container .chat-input-container {

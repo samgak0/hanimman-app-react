@@ -148,11 +148,9 @@ function Chats() {
     }, []);
 
     window.NativeInterface = {
-        receiveMessage: (content, username, createdAt) => {
-            messages.forEach((e) => {
-                console.log(e);
-            });
+        receiveMessage: (id, content, username, createdAt) => {
             const newMessage = {
+                "id": id,
                 "content": content,
                 "sender": { "id": receiverId, "username": receiverName },
                 "receiver": { "id": sender.userId, "username": username },
@@ -166,7 +164,11 @@ function Chats() {
             return receiverId;
         },
         setReadMessages: (ids) => {
-            console.log(ids);
+            setMessages((prevMessages) =>
+                prevMessages.map((message) =>
+                    ids.includes(message.id) ? { ...message, isRead: true } : message
+                )
+            );
         }
     };
 
@@ -225,21 +227,36 @@ function Chats() {
     }, [checkScrollPosition]);
 
     const groupedMessages = useMemo(() => {
-        return messages.reduce((groups, message) => {
+        return messages.reduce((dateGroups, message, index, array) => {
             const date = dayjs(message.createdAt).format('YYYY-MM-DD');
-            if (!groups[date]) {
-                groups[date] = [];
+            if (!dateGroups[date]) {
+                dateGroups[date] = [];
             }
-            groups[date].push(message);
-            return groups;
+
+            const dayGroup = dateGroups[date];
+
+            const prevMessage = array[index - 1];
+            const isNewGroup =
+                !prevMessage ||
+                dayjs(prevMessage.createdAt).format('YYYY-MM-DD') !== date ||
+                prevMessage.sender.id !== message.sender.id ||
+                dayjs(prevMessage.createdAt).format('A hh:mm') !== dayjs(message.createdAt).format('A hh:mm'); // 시간대가 다르면
+
+            if (isNewGroup) {
+                dayGroup.push([message]);
+            } else {
+                dayGroup[dayGroup.length - 1].push(message);
+            }
+
+            return dateGroups;
         }, {});
     }, [messages]);
 
-    const lastSentMessageIndex = useMemo(() => {
-        return messages
-            .map((msg, idx) => (msg.sender.id === sender.userId ? idx : -1))
-            .filter(idx => idx !== -1)
+    const lastSentMessageId = useMemo(() => {
+        const lastMessage = messages
+            .filter(msg => msg.sender.id === sender.userId)
             .pop();
+        return lastMessage ? lastMessage.id : null;
     }, [messages, sender.userId]);
 
     return (
@@ -249,50 +266,60 @@ function Chats() {
                 <h2 className="chat-header-title">{receiverName} 님과 대화</h2>
             </div>
             <div className="chat-message-container">
-                {Object.entries(groupedMessages).map(([date, messages]) => (
+                {Object.entries(groupedMessages).map(([date, dayGroups]) => (
                     <div key={date} className="chat-date-group">
                         <div className="chat-date">
                             {dayjs(date).format('YYYY년 MM월 DD일')}
                         </div>
-                        {messages.map((message, index) => (
-                            <div
-                                key={message.id}
-                                className={`chat-message ${message.sender.id === sender.userId ? 'chat-message-received' : 'chat-message-sent'}`}
-                            >
-                                {message.sender.id === sender.userId && (
-                                    <div className="status">
-                                        <div className="receive-time right">
-                                            {dayjs(message.createdAt).format('A hh:mm')}
-                                        </div>
-                                        {index === messages.length - 1 && (
-                                            <div className="read-status">
-                                                {message.isRead ? '읽음' : '전송됨'}
+                        {dayGroups.map((timeGroup, groupIndex) => (
+                            <div key={groupIndex} className="time-group">
+                                {timeGroup.map((message, index) => (
+                                    <div
+                                        key={message.id}
+                                        className={`chat-message ${message.sender.id === sender.userId
+                                            ? 'chat-message-received'
+                                            : 'chat-message-sent'
+                                            }`}
+                                    >
+                                        {message.sender.id === sender.userId && index === timeGroup.length - 1 && (
+                                            <div className="status left">
+                                                <div className="receive-time">
+                                                    {dayjs(message.createdAt).format('A hh:mm')}
+                                                </div>
+                                                {message.id === lastSentMessageId && (
+
+                                                    <div className="read-status">
+                                                        {message.isRead ? '읽음' : '전송됨'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        <div className="chat-bubble">{message.content}</div>
+                                        {message.sender.id !== sender.userId && index === timeGroup.length - 1 && (
+                                            <div className="status right">
+                                                <div className="receive-time">
+                                                    {dayjs(message.createdAt).format('A hh:mm')}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
-                                )}
-                                <div className="chat-bubble">
-                                    {message.content}
-                                </div>
-                                {message.sender.id !== sender.userId && (
-                                    <div className="status">
-                                        <div className="receive-time right">
-                                            {dayjs(message.createdAt).format('A hh:mm')}
-                                        </div>
-                                    </div>
-                                )}
+                                ))}
                             </div>
                         ))}
                     </div>
                 ))}
             </div>
 
-
+            {/* 하단으로 스크롤 버튼 */}
             <button
-                className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''}`} onClick={scrollToBottomSmooth} >
+                className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''
+                    }`}
+                onClick={scrollToBottomSmooth}
+            >
                 <img src="/button.svg" alt="아이콘" className="icon" />
             </button>
 
+            {/* 메시지 입력 필드 */}
             <div className="chat-input-container" ref={chatInputContainer}>
                 <input
                     type="text"
@@ -302,12 +329,10 @@ function Chats() {
                     className="chat-input"
                 />
                 <button onClick={sendMessage} className="chat-send-button">전송</button>
-
-
-
             </div>
         </div>
     );
+
 }
 
 export default Chats;

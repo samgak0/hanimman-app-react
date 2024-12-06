@@ -143,7 +143,7 @@ function Chats() {
 
         const scrollHeight = document.documentElement.scrollHeight;
         const clientHeight = document.documentElement.clientHeight;
-        const isBottom = ((scrollHeight - scrollTop - clientHeight) <= 44);
+        const isBottom = ((scrollHeight - scrollTop - clientHeight) <= 30);
         setIsScrolledToBottom(isBottom);
     }, []);
 
@@ -263,7 +263,7 @@ function Chats() {
         <div className="chat-container" ref={chatContainerRef}>
             <div className="chat-header">
                 <button className="back-button" onClick={() => navigate(-1)}>&lt;</button>
-                <h2 className="chat-header-title">{receiverName} 님과 대화</h2>
+                <h1 className="chat-header-title">{receiverName} 님과 대화</h1>
             </div>
             <div className="chat-message-container">
                 {Object.entries(groupedMessages).map(([date, dayGroups]) => (
@@ -310,7 +310,6 @@ function Chats() {
                 ))}
             </div>
 
-            {/* 하단으로 스크롤 버튼 */}
             <button
                 className={`scroll-to-bottom-button ${isScrolledToBottom ? 'hidden' : ''
                     }`}
@@ -319,7 +318,6 @@ function Chats() {
                 <img src="/button.svg" alt="아이콘" className="icon" />
             </button>
 
-            {/* 메시지 입력 필드 */}
             <div className="chat-input-container" ref={chatInputContainer}>
                 <input
                     type="text"

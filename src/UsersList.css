@@ -46,6 +46,10 @@
     justify-content: center;
 }
 
+.users-list-container .user-card h4 {
+    margin: 0;
+}
+
 .users-list-container .users-grid {
     display: flex;
     flex-wrap: wrap;
